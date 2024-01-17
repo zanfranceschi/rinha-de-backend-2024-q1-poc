@@ -1,4 +1,4 @@
-# rinha-concurrency-control
+# rinha-2024q1-crebito
 
 FIXME
 
@@ -29,8 +29,8 @@ To learn more about configuring Logback, read its [documentation](http://logback
 
 1. Configure your service to accept incoming connections (edit service.clj and add  ::http/host "0.0.0.0" )
 2. Build an uberjar of your service: `lein uberjar`
-3. Build a Docker image: `sudo docker build -t rinha-concurrency-control .`
-4. Run your Docker image: `docker run -p 8080:8080 rinha-concurrency-control`
+3. Build a Docker image: `sudo docker build -t rinha-2024q1-crebito .`
+4. Run your Docker image: `docker run -p 8080:8080 rinha-2024q1-crebito`
 
 ### [OSv](http://osv.io/) unikernel support with [Capstan](http://osv.io/capstan/)
 
@@ -38,7 +38,7 @@ To learn more about configuring Logback, read its [documentation](http://logback
 
 Once the image it built, it's cached.  To delete the image and build a new one:
 
-1. `capstan rmi rinha-concurrency-control; capstan build`
+1. `capstan rmi rinha-2024q1-crebito; capstan build`
 
 
 ## Links

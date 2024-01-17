@@ -1,11 +1,11 @@
-(ns rinha-concurrency-control.service
+(ns rinha-2024q1-crebito.service
   (:require [clojure.java.jdbc :as jdbc]
             [clojure.string :as string]
             [io.pedestal.http :as http]
             [io.pedestal.http.body-params :as body-params]
             [ring.util.response :as ring-resp]
-            [rinha-concurrency-control.db :as db]
-            [rinha-concurrency-control.interceptors :as interceptors]
+            [rinha-2024q1-crebito.db :as db]
+            [rinha-2024q1-crebito.interceptors :as interceptors]
             [schema.core :as s]))
 
 (defn home-page

@@ -13,7 +13,7 @@
 
     <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
       <!-- rollover daily -->
-      <fileNamePattern>logs/rinha-concurrency-control-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+      <fileNamePattern>logs/rinha-2024q1-crebito-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
       <!-- or whenever the file size reaches 64 MB -->
       <maxFileSize>64 MB</maxFileSize>
     </rollingPolicy>

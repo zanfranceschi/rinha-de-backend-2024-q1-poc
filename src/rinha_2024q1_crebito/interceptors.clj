@@ -1,8 +1,8 @@
-(ns rinha-concurrency-control.interceptors
+(ns rinha-2024q1-crebito.interceptors
   (:require [clojure.data.json :as json]
             [io.pedestal.interceptor :as interceptor]
             [io.pedestal.log :as log]
-            [rinha-concurrency-control.db :as db]))
+            [rinha-2024q1-crebito.db :as db]))
 
 (def db-interceptor
   (interceptor/interceptor

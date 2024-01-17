@@ -1,8 +1,8 @@
-(ns rinha-concurrency-control.service-test
+(ns rinha-2024q1-crebito.service-test
   (:require [clojure.test :refer :all]
             [io.pedestal.test :refer :all]
             [io.pedestal.http :as bootstrap]
-            [rinha-concurrency-control.service :as service]))
+            [rinha-2024q1-crebito.service :as service]))
 
 (def service
   (::bootstrap/service-fn (bootstrap/create-servlet service/service)))

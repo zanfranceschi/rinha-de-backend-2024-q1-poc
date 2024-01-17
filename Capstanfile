@@ -9,8 +9,8 @@ base: cloudius/osv-openjdk8
 #
 # The command line passed to OSv to start up the application.
 #
-#cmdline: /java.so -cp /rinha-concurrency-control/app.jar clojure.main -m rinha-concurrency-control
-cmdline: /java.so -jar /rinha-concurrency-control/app.jar
+#cmdline: /java.so -cp /rinha-2024q1-crebito/app.jar clojure.main -m rinha-2024q1-crebito
+cmdline: /java.so -jar /rinha-2024q1-crebito/app.jar
 
 #
 # The command to use to build the application.
@@ -25,5 +25,5 @@ cmdline: /java.so -jar /rinha-concurrency-control/app.jar
 # List of files that are included in the generated image.
 #
 files:
-  /rinha-concurrency-control/app.jar: ./target/rinha-concurrency-control-0.0.1-SNAPSHOT-standalone.jar
+  /rinha-2024q1-crebito/app.jar: ./target/rinha-2024q1-crebito-0.0.1-SNAPSHOT-standalone.jar
 

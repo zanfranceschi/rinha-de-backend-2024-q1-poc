@@ -1,31 +1,31 @@
 ###
-GET http://localhost:8080/clientes/9999/extrato
+GET http://localhost:9999/clientes/1/extrato
 
 
 ###
 
-POST http://localhost:8080/clientes/1/transacoes
+POST http://localhost:9999/clientes/1/transacoes
 Content-Type: application/json
 
 {
-  "valor": 10,
+  "valor": 10000,
   "tipo": "d",
-  "descricao" : "01234567890123456789012345678901234567890123456789"
+  "descricao" : "café"
 }
 
 ###
-POST http://localhost:8080/clientes/1/transacoes
+POST http://localhost:9999/clientes/1/transacoes
 Content-Type: application/json
 
 {
   "valor": 10,
   "tipo": "c",
-  "descricao" : "[1, 2]"
+  "descricao" : "cre"
 }
 
 ###
-POST http://localhost:8080/admin/db-reset
+POST http://localhost:9999/admin/db-reset
 
 
 ###
-GET http://localhost:8080/teste
+GET http://localhost:9999/teste

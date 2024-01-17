@@ -1,4 +1,4 @@
-(defproject rinha-concurrency-control "0.0.1-SNAPSHOT"
+(defproject rinha-2024q1-crebito "0.0.1-SNAPSHOT"
   :description "FIXME: write description"
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"
@@ -27,7 +27,7 @@
   :resource-paths ["config", "resources"]
   ;; If you use HTTP/2 or ALPN, use the java-agent to pull in the correct alpn-boot dependency
   ;:java-agents [[org.mortbay.jetty.alpn/jetty-alpn-agent "2.0.5"]]
-  :profiles {:dev {:aliases {"run-dev" ["trampoline" "run" "-m" "rinha-concurrency-control.server/run-dev"]}
+  :profiles {:dev {:aliases {"run-dev" ["trampoline" "run" "-m" "rinha-2024q1-crebito.server/run-dev"]}
                    :dependencies [[io.pedestal/pedestal.service-tools "0.6.3"]]}
-             :uberjar {:aot [rinha-concurrency-control.server]}}
-  :main ^{:skip-aot true} rinha-concurrency-control.server)
+             :uberjar {:aot :all}}
+  :main ^{:skip-aot true} rinha-2024q1-crebito.server)

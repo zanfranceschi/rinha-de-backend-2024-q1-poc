@@ -1,4 +1,4 @@
-(ns rinha-concurrency-control.sandbox
+(ns rinha-2024q1-crebito.sandbox
   (:require [clojure.java.jdbc :as jdbc]
             [jdbc.pool.c3p0 :as pool]))
 
@@ -15,7 +15,7 @@
     :max-pool-size 12
     :max-connection-idle-lifetime 2000}))
 
-(jdbc/with-db-transaction [conn db-spec]
+#_(jdbc/with-db-transaction [conn db-spec]
   (let [cmds (jdbc/db-do-commands conn ["update saldos set valor = 0"
                                         "truncate table transacoes"])]
     cmds))
