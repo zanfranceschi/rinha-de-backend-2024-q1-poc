@@ -32,3 +32,14 @@ Content-Type: application/json
   "tipo": "d",
   "descricao" : "descição"
 }
+
+###
+
+POST http://localhost:9999/clientes/1/transacoes
+Content-Type: application/json
+
+{
+  "valor": 1000,
+  "tipo": "c",
+  "descricao" : "pix"
+}
