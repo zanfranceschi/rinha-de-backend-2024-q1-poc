@@ -1,31 +1,34 @@
+GET http://localhost:9999/clientes/7/extrato
 ###
 GET http://localhost:9999/clientes/1/extrato
 
 
-###
-
-POST http://localhost:9999/clientes/1/transacoes
-Content-Type: application/json
-
-{
-  "valor": 10000,
-  "tipo": "d",
-  "descricao" : "café"
-}
 
 ###
-POST http://localhost:9999/clientes/1/transacoes
-Content-Type: application/json
-
-{
-  "valor": 10,
-  "tipo": "c",
-  "descricao" : "cre"
-}
+GET http://localhost:9999/clientes
 
 ###
+
 POST http://localhost:9999/admin/db-reset
 
+###
+
+POST http://localhost:9999/clientes/1/transacoes
+Content-Type: application/json
+
+{
+  "valor": 1000,
+  "tipo": "c",
+  "descricao" : "descição"
+}
 
 ###
-GET http://localhost:9999/teste
+
+POST http://localhost:9999/clientes/1/transacoes
+Content-Type: application/json
+
+{
+  "valor": 1000,
+  "tipo": "d",
+  "descricao" : "descição"
+}

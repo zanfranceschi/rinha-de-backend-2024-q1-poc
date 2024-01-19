@@ -1,4 +1,4 @@
-(ns rinha-2024q1-crebito.db 
+(ns rinha-2024q1-crebito.db
   (:require [jdbc.pool.c3p0 :as pool]))
 
 (def db-hostname (or (System/getenv "DB_HOSTNAME") "localhost"))

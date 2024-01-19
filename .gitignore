@@ -1,48 +1,15 @@
-# Project related
-
-# Java related
+/target
+/lib
+/classes
+/checkouts
 pom.xml
 pom.xml.asc
-*jar
+*.jar
 *.class
+/.lein-*
+/.nrepl-port
 
-# Leiningen
-classes/
-lib/
-native/
-checkouts/
-target/
-.lein-*
-repl-port
-.nrepl-port
-.repl
-
-# Temp Files
-*.orig
-*~
-.*.swp
-.*.swo
-*.tmp
-*.bak
-
-# OS X
-.DS_Store
-
-# Logging
-*.log
-/logs/
-
-# Builds
-out/
-build/
-
-/.clj-kondo
-/.lsp
-/.calva
-/.testes
-profiles.clj
-.lein-env
-/.idea
+#calva
 # visual code
 /*.vsix
 # .vscode/settings.json
