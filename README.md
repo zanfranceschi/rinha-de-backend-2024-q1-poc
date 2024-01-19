@@ -29,4 +29,4 @@ O diretório [participacao](./participacao) contem os artefatos usados para a su
 
 ## License
 
-Copyright © 2024 FIXME
+MIT - Copyright © 2024 - Poc Rinha de Backend Segunda Edição em Clojure
