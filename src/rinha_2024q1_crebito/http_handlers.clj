@@ -1,14 +1,8 @@
-(ns rinha-2024q1-crebito.handler
+(ns rinha-2024q1-crebito.http-handlers
   (:require [clojure.string :as string]
-            [compojure.core :refer :all]
-            [next.jdbc.result-set :as rs]
-            [compojure.route :as route]
             [next.jdbc :as jdbc]
-            [ring.middleware.defaults :refer [site-defaults wrap-defaults]]
-            [ring.middleware.json :as json]
-            [rinha-2024q1-crebito.db :as db]
+            [next.jdbc.result-set :as rs]
             [schema.core :as s]))
-
 
 (def tipos-transacao #{"c" "d"})
 
@@ -18,12 +12,8 @@
    :tipo      (apply s/enum tipos-transacao)
    :descricao (s/pred (fn [d]
                         (and (string? d)
-                             (<= (count d) 10))))})
-(def clientes
-  (memoize (fn []
-             (reduce (fn [acc {:clientes/keys [id nome limite]}]
-                       (assoc acc id {:id id :nome nome :limite limite})) {}
-                     (jdbc/execute! db/spec ["select * from clientes"])))))
+                             (and (<= (count d) 10)
+                                  (>= (count d) 1)))))})
 
 (defn extrato!
   [{db-spec :db-spec
@@ -88,9 +78,10 @@
     (jdbc/with-transaction [conn db-spec]
       (jdbc/execute-one! conn ["select pg_advisory_xact_lock(?)" cliente_id])
       (let [{limite :limite} (get clientes cliente_id)
-            {saldo :saldos/saldo :as x} (jdbc/execute-one! conn ["select valor as saldo
-                                                                  from saldos
-                                                                  where cliente_id = ?" cliente_id])
+            {saldo :saldos/saldo} (jdbc/execute-one! conn ["select valor as saldo
+                                                            from saldos
+                                                            where cliente_id = ?"
+                                                           cliente_id])
             ultrapassaria-limite? (< (- saldo valor) (* limite -1))]
         (if ultrapassaria-limite?
           {:status 422
@@ -131,7 +122,7 @@
     (catch Exception e
       (if (= :schema.core/error (:type (ex-data e)))
         {:status 422
-         :body   {:erro "manda essa merda direito com valor, tipo e descricao"}}
+         :body   {:erro "manda essa merda direito com 'valor', 'tipo' e 'descricao'"}}
         (throw e)))))
 
 (defn clientes!
@@ -148,30 +139,3 @@
                      ["update saldos set valor = 0; truncate table transacoes"])
   {:status 200
    :body {:msg "db reset!"}})
-
-(defroutes app-routes
-  (GET "/" _ "ok")
-  (GET ["/clientes/:id/extrato" :id #"[0-9]+"] _ extrato!)
-  (POST ["/clientes/:id/transacoes" :id #"[0-9]+"] _ transacionar!)
-  (GET ["/clientes"] _ clientes!)
-  (POST "/admin/db-reset" _ admin-reset-db!)
-  (route/not-found "Not Found"))
-
-(defn wrap-db
-  [handler]
-  (fn [request]
-    (handler (assoc request :db-spec db/spec))))
-
-(defn wrap-clientes
-  [handler]
-  (fn [request]
-    (handler (assoc request :cached-clientes (clientes)))))
-
-(def app
-  (wrap-defaults
-   (-> app-routes
-       wrap-db
-       wrap-clientes
-       (json/wrap-json-body {:keywords? true})
-       json/wrap-json-response)
-   (assoc-in site-defaults [:security :anti-forgery] false)))

@@ -1,7 +1,7 @@
 (ns rinha-2024q1-crebito.handler-test
-  (:require [clojure.test :refer :all]
+  (:require [clojure.test :refer [deftest is testing]]
             [ring.mock.request :as mock]
-            [rinha-2024q1-crebito.handler :refer :all]))
+            [rinha-2024q1-crebito.endpoints :refer [app]]))
 
 (deftest test-app
   (testing "main route"

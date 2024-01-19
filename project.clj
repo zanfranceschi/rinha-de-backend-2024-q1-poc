@@ -11,7 +11,7 @@
                  [com.github.seancorfield/next.jdbc "1.3.909"]
                  [prismatic/schema "1.4.1"]]
   :plugins [[lein-ring "0.12.5"]]
-  :ring {:handler rinha-2024q1-crebito.handler/app}
+  :ring {:handler rinha-2024q1-crebito.endpoints/app}
   :profiles
   {:dev {:dependencies [[javax.servlet/servlet-api "2.5"]
                         [ring/ring-mock "0.3.2"]]}
