@@ -1,53 +1,10 @@
 (ns rinha-2024q1-crebito.http-handlers
-  (:require [clojure.string :as string]
-            [next.jdbc :as jdbc]
-            [next.jdbc.result-set :as rs]
-            [schema.core :as s]))
+  (:require [next.jdbc :as jdbc]
+            [rinha-2024q1-crebito.payloads :as payloads]
+            [schema.core :as s]
+            [rinha-2024q1-crebito.http-handlers :as handlers]))
 
-(def tipos-transacao #{"c" "d"})
-
-;; - 2.147.483.647 é o valor máximo para INTEGER do Postgres
-;; - Com créditos demais, pode haver erros de out of range.
-;;   (Não validado propositalmente)
-(s/defschema Transacao
-  {:valor     (s/pred #(and (pos-int? %) (<= % 1000000))) 
-   :tipo      (apply s/enum tipos-transacao)
-   :descricao (s/pred (fn [d]
-                        (and (string? d)
-                             (and (<= (count d) 10)
-                                  (>= (count d) 1)))))})
-(defn extrato!
-  [{db-spec :db-spec
-    {cliente_id* :id} :route-params
-    clientes :cached-clientes}]
-  (if-let [{cliente_id :id} (get clientes (Integer/parseInt cliente_id*))]
-    (try
-      (let [resultado (jdbc/execute!
-                       db-spec
-                       ["(select valor, 'saldo' as tipo, 'saldo' as descricao, now() as realizada_em
-                        from saldos
-                        where cliente_id = ?)
-                       union all
-                       (select valor, tipo, descricao, realizada_em
-                        from transacoes
-                        where cliente_id = ?
-                        order by id desc limit 10)"
-                        cliente_id cliente_id])
-            saldo-row (first resultado)
-            saldo {:total        (:valor saldo-row)
-                   :data_extrato (:realizada_em saldo-row)
-                   :limite       (:limite (get clientes cliente_id))}
-            transacoes (rest resultado)]
-        {:status 200
-         :body   {:saldo              saldo
-                  :ultimas_transacoes transacoes}})
-      (catch Exception e
-        (if (string/includes? (.getMessage e) "violates foreign key constraint \"fk_clientes_transacoes_id\"")
-          {:status 404}
-          (throw e))))
-    {:status 404}))
-
-(defn creditar!
+(defn ^:private creditar!
   [cliente_id clientes valor descricao db-spec]
   (jdbc/with-transaction [conn db-spec]
     (jdbc/execute! conn ["select pg_advisory_xact_lock(?)" cliente_id])
@@ -68,7 +25,7 @@
        :body {:limite limite
               :saldo novo-saldo}})))
 
-(defn debitar!
+(defn ^:private debitar!
   [cliente_id clientes valor descricao db-spec]
   (jdbc/with-transaction [conn db-spec]
     (jdbc/execute-one! conn ["select pg_advisory_xact_lock(?)" cliente_id])
@@ -77,10 +34,8 @@
                                                           from saldos
                                                           where cliente_id = ?"
                                                          cliente_id])
-          ultrapassaria-limite? (< (- saldo valor) (* limite -1))]
-      (if ultrapassaria-limite?
-        {:status 422
-         :body {:erro "limite insuficiente"}}
+          tem-limite? (>= (- saldo valor) (* limite -1))]
+      (if tem-limite?
         (let [{novo-saldo :saldos/saldo} (jdbc/execute-one! conn ["update saldos
                                                                    set valor = valor + ?
                                                                    where cliente_id = ?
@@ -95,36 +50,61 @@
                                descricao])
           {:status 200
            :body {:limite limite
-                  :saldo novo-saldo}})))))
+                  :saldo novo-saldo}})
+        {:status 422
+         :body {:erro "limite insuficiente"}}))))
+
+(defn find-cliente-handler-wrapper
+  [handler]
+  (fn [{{cliente_id* :id} :route-params
+        clientes :cached-clientes :as request}]
+    (if-let [{cliente_id :id} (get clientes (Integer/parseInt cliente_id*))]
+      (handler (assoc request :cliente-id cliente_id))
+      {:status 404})))
+
+(defn extrato!
+  [{db-spec :db-spec
+    cliente_id :cliente-id
+    clientes :cached-clientes}]
+  (let [resultado (jdbc/execute!
+                   db-spec
+                   ["(select valor, 'saldo' as tipo, 'saldo' as descricao, now() as realizada_em
+                     from saldos
+                     where cliente_id = ?)
+                     union all
+                     (select valor, tipo, descricao, realizada_em
+                     from transacoes
+                     where cliente_id = ?
+                     order by id desc limit 10)"
+                    cliente_id cliente_id])
+        saldo-row (first resultado)
+        saldo {:total        (:valor saldo-row)
+               :data_extrato (:realizada_em saldo-row)
+               :limite       (:limite (get clientes cliente_id))}
+        transacoes (rest resultado)]
+    {:status 200
+     :body   {:saldo              saldo
+              :ultimas_transacoes transacoes}}))
 
 (defn transacionar!
-  [{db-spec :db-spec payload :body {cliente_id* :id} :route-params clientes :cached-clientes}]
-  (if-let [{cliente_id :id} (get clientes (Integer/parseInt cliente_id*))]
-    (try
-      (let [{valor     :valor
-             tipo      :tipo
-             descricao :descricao} (s/validate Transacao payload)]
-        (cond
-          (= tipo "c") (creditar! cliente_id clientes valor descricao db-spec)
-          (= tipo "d") (debitar! cliente_id clientes valor descricao db-spec)))
-      (catch Exception e
-        (if (= :schema.core/error (:type (ex-data e)))
-          {:status 422
-           :body   {:erro "manda essa merda direito com 'valor', 'tipo' e 'descricao'"}}
-          (throw e))))
-    {:status 404}))
-
-(defn clientes!
-  [{db-spec :db-spec}]
-  (let [clientes (jdbc/execute! db-spec
-                                ["select * from clientes"]
-                                {:builder-fn rs/as-unqualified-maps})]
-    {:status 200
-     :body clientes}))
+  [{db-spec :db-spec
+    payload :body
+    cliente_id :cliente-id
+    clientes :cached-clientes}]
+  (if-not (s/check payloads/Transacao payload)
+    (let [{valor     :valor
+           tipo      :tipo
+           descricao :descricao} payload
+          tx-fn {"d" debitar!
+                 "c" creditar!}]
+      ((tx-fn tipo) cliente_id clientes valor descricao db-spec))
+    {:status 422
+     :body   {:erro "manda essa merda direito só com 'valor', 'tipo' e 'descricao'"}}))
 
 (defn admin-reset-db!
   [{:keys [db-spec]}]
   (jdbc/execute-one! db-spec
-                     ["update saldos set valor = 0; truncate table transacoes"])
+                     ["update saldos set valor = 0;
+                       truncate table transacoes;"])
   {:status 200
    :body {:msg "db reset!"}})

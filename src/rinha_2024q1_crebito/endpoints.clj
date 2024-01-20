@@ -8,9 +8,8 @@
 
 (defroutes app-routes
   (GET "/" _ "ok")
-  (GET ["/clientes/:id/extrato" :id #"[0-9]+"] _ handlers/extrato!)
-  (POST ["/clientes/:id/transacoes" :id #"[0-9]+"] _ handlers/transacionar!)
-  (GET ["/clientes"] _ handlers/clientes!)
+  (GET ["/clientes/:id/extrato" :id #"[0-9]+"] _ (handlers/find-cliente-handler-wrapper handlers/extrato!))
+  (POST ["/clientes/:id/transacoes" :id #"[0-9]+"] _ (handlers/find-cliente-handler-wrapper handlers/transacionar!))
   (POST "/admin/db-reset" _ handlers/admin-reset-db!)
   (route/not-found "Not Found"))
 
