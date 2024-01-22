@@ -16,7 +16,7 @@ Content-Type: application/json
 {
   "valor": 1,
   "tipo": "c",
-  "descricao" : "descição"
+  "descricao" : "descrição"
 }
 
 
@@ -25,9 +25,9 @@ POST http://localhost:9999/clientes/1/transacoes
 Content-Type: application/json
 
 {
-  "valor": 1000,
-  "tipo": "e",
-  "descricao" : "descição"
+  "valor": 100000,
+  "tipo": "c",
+  "descricao" : "descrição"
 }
 
 ###
