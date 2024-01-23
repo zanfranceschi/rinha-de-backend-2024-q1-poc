@@ -101,6 +101,35 @@
     {:status 422
      :body   {:erro "manda essa merda direito só com 'valor', 'tipo' e 'descricao'"}}))
 
+(defn transacionar-proc!
+  [{db-spec :db-spec
+    payload :body
+    cliente_id :cliente-id
+    clientes :cached-clientes}]
+  (if-not (s/check payloads/Transacao payload)
+    (let [{limite :limite} (get clientes cliente_id)
+          {valor     :valor
+           tipo      :tipo
+           descricao :descricao} payload
+          proc {"d" "debitar"
+                "c" "creditar"}
+          {novo-saldo   :novo_saldo
+           possui-erro? :possui_erro
+           mensagem     :mensagem} (jdbc/execute-one!
+                                    db-spec
+                                    [(format "select novo_saldo, possui_erro, mensagem from %s(?, ?, ?)" (proc tipo))
+                                     cliente_id
+                                     valor
+                                     descricao])]
+      (if possui-erro?
+        {:status 422
+         :body {:erro mensagem}}
+        {:status 200
+         :body {:limite limite
+                :saldo novo-saldo}}))
+    {:status 422
+     :body   {:erro "manda essa merda direito só com 'valor', 'tipo' e 'descricao'"}}))
+
 (defn admin-reset-db!
   [{:keys [db-spec]}]
   (jdbc/execute-one! db-spec

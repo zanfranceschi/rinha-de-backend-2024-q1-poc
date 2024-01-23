@@ -6,6 +6,7 @@ services:
     hostname: api01
     environment:
       - DB_HOSTNAME=localhost
+      - USAR_DB_PROC=true
       - PORT=3001
     network_mode: "host"
     expose:
@@ -23,6 +24,7 @@ services:
     hostname: api02
     environment:
       - DB_HOSTNAME=localhost
+      - USAR_DB_PROC=true
       - PORT=3002
     network_mode: "host"
     expose:
