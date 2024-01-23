@@ -10,5 +10,5 @@
     :user "admin"
     :password "123"
     :subname (str "//" db-hostname ":5432/rinha?ApplicationName=rinha-web-server")
-    :initial-pool-size 10
-    :max-pool-size 20}))
+    :initial-pool-size 12
+    :max-pool-size 15}))
