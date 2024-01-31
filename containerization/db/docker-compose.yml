@@ -11,7 +11,7 @@ services:
     expose:
       - "5432"
     volumes:
-      - ./ddl.sql:/docker-entrypoint-initdb.d/ddl.sql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     network_mode: host
     deploy:
       resources:

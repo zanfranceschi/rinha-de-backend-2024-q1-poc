@@ -7,8 +7,14 @@
             [rinha-2024q1-crebito.middlewares :as middlewares]))
 
 (def transacionar-handler-fn
-  (if (= (System/getenv "USAR_DB_PROC") "true")
+  (cond
+    (= (System/getenv "FORCAR_INCONSISTENCIA") "true")
+    handlers/transacionar-proc-sem-consistencia!
+    
+    (= (System/getenv "USAR_DB_PROC") "true")
     handlers/transacionar-proc!
+
+    :else
     handlers/transacionar!))
 
 (defroutes app-routes

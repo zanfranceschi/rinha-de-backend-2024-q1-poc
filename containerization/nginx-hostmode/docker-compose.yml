@@ -57,7 +57,7 @@ services:
     expose:
       - "5432"
     volumes:
-      - ../db/ddl.sql:/docker-entrypoint-initdb.d/ddl.sql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     command: postgres -c checkpoint_timeout=600 -c max_wal_size=4096
     deploy:
       resources:
