@@ -99,7 +99,7 @@
                  "c" creditar!}]
       ((tx-fn tipo) cliente_id clientes valor descricao db-spec))
     {:status 422
-     :body   {:erro "manda essa merda direito só com 'valor', 'tipo' e 'descricao'"}}))
+     :body   {:erro "manda essa merda direito com 'valor', 'tipo' e 'descricao'"}}))
 
 (defn transacionar-proc!
   [{db-spec :db-spec
@@ -129,7 +129,7 @@
            :body {:limite limite
                   :saldo novo-saldo}})))
     {:status 422
-     :body   {:erro "manda essa merda direito só com 'valor', 'tipo' e 'descricao'"}}))
+     :body   {:erro "manda essa merda direito com 'valor', 'tipo' e 'descricao'"}}))
 
 (defn transacionar-proc-sem-consistencia!
   "Essa função usa a proc que não reforça consistência. 
@@ -161,7 +161,7 @@
            :body {:limite limite
                   :saldo novo-saldo}})))
     {:status 422
-     :body   {:erro "manda essa merda direito só com 'valor', 'tipo' e 'descricao'"}}))
+     :body   {:erro "manda essa merda direito com 'valor', 'tipo' e 'descricao'"}}))
 
 (defn admin-reset-db!
   [{:keys [db-spec]}]
