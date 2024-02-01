@@ -54,15 +54,7 @@
         {:status 422
          :body {:erro "limite insuficiente"}}))))
 
-(defn find-cliente-handler-wrapper
-  [handler]
-  (fn [{{cliente_id* :id} :route-params
-        clientes :cached-clientes :as request}]
-    (if-let [{cliente_id :id} (get clientes (Integer/parseInt cliente_id*))]
-      (handler (assoc request :cliente-id cliente_id))
-      {:status 404})))
-
-(defn extrato!
+(defn ^:private extrato!*
   [{db-spec :db-spec
     cliente_id :cliente-id
     clientes :cached-clientes}]
@@ -86,7 +78,7 @@
      :body   {:saldo              saldo
               :ultimas_transacoes transacoes}}))
 
-(defn transacionar!
+(defn ^:private transacionar!*
   [{db-spec :db-spec
     payload :body
     cliente_id :cliente-id
@@ -101,67 +93,17 @@
     {:status 422
      :body   {:erro "manda essa merda direito com 'valor', 'tipo' e 'descricao'"}}))
 
-(defn transacionar-proc!
-  [{db-spec :db-spec
-    payload :body
-    cliente_id :cliente-id
-    clientes :cached-clientes}]
-  (if-not (s/check payloads/Transacao payload)
-    (jdbc/with-transaction [conn db-spec]
-      (let [{limite :limite} (get clientes cliente_id)
-            {valor     :valor
-             tipo      :tipo
-             descricao :descricao} payload
-            proc {"d" "debitar"
-                  "c" "creditar"}
-            {novo-saldo   :novo_saldo
-             possui-erro? :possui_erro
-             mensagem     :mensagem} (jdbc/execute-one!
-                                      conn
-                                      [(format "select novo_saldo, possui_erro, mensagem from %s(?, ?, ?)" (proc tipo))
-                                       cliente_id
-                                       valor
-                                       descricao])]
-        (if possui-erro?
-          {:status 422
-           :body {:erro mensagem}}
-          {:status 200
-           :body {:limite limite
-                  :saldo novo-saldo}})))
-    {:status 422
-     :body   {:erro "manda essa merda direito com 'valor', 'tipo' e 'descricao'"}}))
+(defn find-cliente-handler-wrapper
+  [handler]
+  (fn [{{cliente_id* :id} :route-params
+        clientes :cached-clientes :as request}]
+    (if-let [{cliente_id :id} (get clientes (Integer/parseInt cliente_id*))]
+      (handler (assoc request :cliente-id cliente_id))
+      {:status 404})))
 
-(defn transacionar-proc-sem-consistencia!
-  "Essa função usa a proc que não reforça consistência. 
-   Apenas usada para testar resultados com inconsistências no Gatling."
-  [{db-spec :db-spec
-    payload :body
-    cliente_id :cliente-id
-    clientes :cached-clientes}]
-  (if-not (s/check payloads/Transacao payload)
-    (jdbc/with-transaction [conn db-spec]
-      (let [{limite :limite} (get clientes cliente_id)
-            {valor     :valor
-             tipo      :tipo
-             descricao :descricao} payload
-            proc {"d" "debitar"
-                  "c" "creditar"}
-            {novo-saldo   :novo_saldo
-             possui-erro? :possui_erro
-             mensagem     :mensagem} (jdbc/execute-one!
-                                      conn
-                                      [(format "select novo_saldo, possui_erro, mensagem from %s_sem_consistencia(?, ?, ?)" (proc tipo))
-                                       cliente_id
-                                       valor
-                                       descricao])]
-        (if possui-erro?
-          {:status 422
-           :body {:erro mensagem}}
-          {:status 200
-           :body {:limite limite
-                  :saldo novo-saldo}})))
-    {:status 422
-     :body   {:erro "manda essa merda direito com 'valor', 'tipo' e 'descricao'"}}))
+(def transacionar! (find-cliente-handler-wrapper transacionar!*))
+
+(def extrato! (find-cliente-handler-wrapper extrato!*))
 
 (defn admin-reset-db!
   [{:keys [db-spec]}]

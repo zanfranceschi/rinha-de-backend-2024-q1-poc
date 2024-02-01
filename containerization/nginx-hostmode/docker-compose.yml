@@ -6,7 +6,6 @@ services:
     hostname: api01
     environment:
       - DB_HOSTNAME=localhost
-      - USAR_DB_PROC=true
       - PORT=3001
     network_mode: "host"
     expose:
@@ -24,7 +23,6 @@ services:
     hostname: api02
     environment:
       - DB_HOSTNAME=localhost
-      - USAR_DB_PROC=true
       - PORT=3002
     network_mode: "host"
     expose:
@@ -57,7 +55,7 @@ services:
     expose:
       - "5432"
     volumes:
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
     command: postgres -c checkpoint_timeout=600 -c max_wal_size=4096
     deploy:
       resources:

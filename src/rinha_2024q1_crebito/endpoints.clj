@@ -6,23 +6,12 @@
             [rinha-2024q1-crebito.http-handlers :as handlers]
             [rinha-2024q1-crebito.middlewares :as middlewares]))
 
-(def transacionar-handler-fn
-  (cond
-    (= (System/getenv "FORCAR_INCONSISTENCIA") "true")
-    handlers/transacionar-proc-sem-consistencia!
-    
-    (= (System/getenv "USAR_DB_PROC") "true")
-    handlers/transacionar-proc!
-
-    :else
-    handlers/transacionar!))
-
 (defroutes app-routes
-  (GET "/" _ "ok")
-  (GET ["/clientes/:id/extrato" :id #"[0-9]+"] _ (handlers/find-cliente-handler-wrapper handlers/extrato!))
-  (POST ["/clientes/:id/transacoes" :id #"[0-9]+"] _ (handlers/find-cliente-handler-wrapper transacionar-handler-fn))
-  (POST "/admin/db-reset" _ handlers/admin-reset-db!)
-  (route/not-found "Not Found"))
+  (GET ["/"] _ "ok")
+  (GET ["/clientes/:id/extrato" :id #"[0-9]+"] _ handlers/extrato!)
+  (POST ["/clientes/:id/transacoes" :id #"[0-9]+"] _ handlers/transacionar!)
+  (POST ["/admin/db-reset"] _ handlers/admin-reset-db!)
+  (route/not-found "oops hehe"))
 
 (def app
   (wrap-defaults
