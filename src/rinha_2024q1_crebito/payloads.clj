@@ -9,5 +9,4 @@
    :tipo      (s/enum "c" "d")
    :descricao (s/pred (fn [d]
                         (and (string? d)
-                             (and (<= (count d) 10)
-                                  (>= (count d) 1)))))})
+                             (<= 1 (count d) 10))))})
