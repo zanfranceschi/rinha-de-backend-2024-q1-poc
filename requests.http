@@ -1,4 +1,4 @@
-GET http://localhost:9999/clientes/7/extrato
+GET http://localhost:9999/clientes/1/extrato
 
 
 ###
@@ -40,3 +40,6 @@ Content-Type: application/json
   "tipo": "c",
   "descricao" : "pix"
 }
+
+
+file:///home/zanfranceschi/projects/rinha-de-backend-2024-q1/load-test/user-files/results/rinhabackendcrebitossimulation-20240210024319314/index.html

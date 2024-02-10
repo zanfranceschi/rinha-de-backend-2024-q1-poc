@@ -1,8 +1,8 @@
 (ns rinha-2024q1-crebito.http-handlers
   (:require [next.jdbc :as jdbc]
+            [rinha-2024q1-crebito.http-handlers :as handlers]
             [rinha-2024q1-crebito.payloads :as payloads]
-            [schema.core :as s]
-            [rinha-2024q1-crebito.http-handlers :as handlers]))
+            [schema.core :as s]))
 
 (defn ^:private creditar!
   [cliente_id clientes valor descricao db-spec]
@@ -93,6 +93,66 @@
     {:status 422
      :body   {:erro "manda essa merda direito com 'valor', 'tipo' e 'descricao'"}}))
 
+(defn ^:private transacionar-proc!*
+  [{db-spec :db-spec
+    payload :body
+    cliente_id :cliente-id
+    clientes :cached-clientes}]
+  (if-not (s/check payloads/Transacao payload)
+    (let [{limite :limite} (get clientes cliente_id)
+          {valor     :valor
+           tipo      :tipo
+           descricao :descricao} payload
+          proc {"d" "debitar"
+                "c" "creditar"}
+          {novo-saldo   :novo_saldo
+           possui-erro? :possui_erro
+           mensagem     :mensagem} (jdbc/execute-one!
+                                    db-spec
+                                    [(format "select novo_saldo, possui_erro, mensagem from %s(?, ?, ?)" (proc tipo))
+                                     cliente_id
+                                     valor
+                                     descricao])]
+      (if possui-erro?
+        {:status 422
+         :body {:erro mensagem}}
+        {:status 200
+         :body {:limite limite
+                :saldo novo-saldo}}))
+    {:status 422
+     :body   {:erro "manda essa merda direito com 'valor', 'tipo' e 'descricao'"}}))
+
+(defn ^:private transacionar-proc-tx!*
+  "Life's too short to use transactions in the Rinha de Backend kkk"
+  [{db-spec :db-spec
+    payload :body
+    cliente_id :cliente-id
+    clientes :cached-clientes}]
+  (if-not (s/check payloads/Transacao payload)
+    (jdbc/with-transaction [conn db-spec]
+      (let [{limite :limite} (get clientes cliente_id)
+            {valor     :valor
+             tipo      :tipo
+             descricao :descricao} payload
+            proc {"d" "debitar"
+                  "c" "creditar"}
+            {novo-saldo   :novo_saldo
+             possui-erro? :possui_erro
+             mensagem     :mensagem} (jdbc/execute-one!
+                                      conn
+                                      [(format "select novo_saldo, possui_erro, mensagem from %s(?, ?, ?)" (proc tipo))
+                                       cliente_id
+                                       valor
+                                       descricao])]
+        (if possui-erro?
+          {:status 422
+           :body {:erro mensagem}}
+          {:status 200
+           :body {:limite limite
+                  :saldo novo-saldo}})))
+    {:status 422
+     :body   {:erro "manda essa merda direito com 'valor', 'tipo' e 'descricao'"}}))
+
 (defn find-cliente-handler-wrapper
   [handler]
   (fn [{{cliente_id* :id} :route-params
@@ -101,7 +161,12 @@
       (handler (assoc request :cliente-id cliente_id))
       {:status 404})))
 
-(def transacionar! (find-cliente-handler-wrapper transacionar!*))
+(def ^:private transaction-fn
+  (if (= (System/getenv "API_USE_DB_FUNC") "true")
+    transacionar-proc!*
+    transacionar!*))
+
+(def transacionar! (find-cliente-handler-wrapper transaction-fn))
 
 (def extrato! (find-cliente-handler-wrapper extrato!*))
 
