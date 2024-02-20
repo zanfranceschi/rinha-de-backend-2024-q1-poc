@@ -1,6 +1,5 @@
 (ns rinha-2024q1-crebito.http-handlers
   (:require [next.jdbc :as jdbc]
-            [rinha-2024q1-crebito.http-handlers :as handlers]
             [rinha-2024q1-crebito.payloads :as payloads]
             [schema.core :as s]))
 
